@@ -115,7 +115,18 @@ def main():
         cfg = yaml.safe_load(f)
 
     torch.manual_seed(cfg["seed"])
+    
+    # Robust device selection
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if device.type == "cuda":
+        try:
+            # Test if CUDA actually works
+            torch.cuda.init()
+        except Exception as e:
+            print(f"[Warning] CUDA detected but failed to initialize: {e}")
+            print("Falling back to CPU. (Check your PyTorch/CUDA installation)")
+            device = torch.device("cpu")
+            
     print(f"[Teacher] Device: {device}")
 
     fast    = args.fast or cfg["fast_mode"]["enabled"]

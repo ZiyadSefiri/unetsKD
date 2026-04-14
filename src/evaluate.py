@@ -188,7 +188,15 @@ def main():
     with open(args.config) as f:
         cfg = yaml.safe_load(f)
 
-    device   = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # Robust device selection
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if device.type == "cuda":
+        try:
+            torch.cuda.init()
+        except Exception as e:
+            print(f"[Warning] CUDA detected but failed to initialize: {e}")
+            device = torch.device("cpu")
+
     img_size = cfg["data"]["img_size"]
     max_s    = 50 if args.fast else 0
 
