@@ -1,0 +1,56 @@
+# ─────────────────────────────────────────────
+#  Attention-Guided Knowledge Distillation
+#  DeepGlobe Road Segmentation  ·  config.yaml
+# ─────────────────────────────────────────────
+
+data:
+  root: "archive(1)"          # path relative to project root
+  img_size: 512               # spatial resolution fed to models
+  num_workers: 4
+
+teacher:
+  encoder: "resnet101"
+  encoder_weights: "imagenet"
+  checkpoint: "checkpoints/teacher_best.pth"
+  # Target layer name inside the SMP encoder (resnet101)
+  cam_layer: "layer4"
+
+student:
+  encoder: "mobilenet_v2"
+  encoder_weights: "imagenet"
+  checkpoint: "checkpoints/student_best.pth"
+  # Target layer name inside the SMP encoder (mobilenet_v2)
+  cam_layer: "features.18"    # last ConvBNActivation block
+
+train_teacher:
+  epochs: 50
+  batch_size: 2               # GTX 1650 4GB – ResNet-101 is heavy
+  lr: 1.0e-4
+  weight_decay: 1.0e-4
+  amp: true                   # mixed precision (fp16) – saves ~40% VRAM
+  grad_clip: 1.0
+  scheduler: "cosine"         # CosineAnnealingLR
+  save_every: 5               # save checkpoint every N epochs
+
+train_student:
+  epochs: 60
+  batch_size: 4               # Student is lighter → larger batch
+  lr: 3.0e-4
+  weight_decay: 1.0e-4
+  amp: true
+  grad_clip: 1.0
+  scheduler: "cosine"
+  save_every: 5
+
+loss:
+  alpha: 0.5    # weight for L_task  (BCE + Dice)
+  beta: 0.25    # weight for L_KD   (KL-divergence on soft labels)
+  gamma: 0.25   # weight for L_attn (MSE between Grad-CAM heatmaps)
+  kd_temperature: 4.0   # softmax temperature for KD
+
+fast_mode:
+  enabled: false          # set true (or pass --fast flag) for debug runs
+  max_samples: 200        # images per split in fast mode
+  epochs: 3
+
+seed: 42

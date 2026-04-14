@@ -1,0 +1,26 @@
+# Dataset
+archive(1)/
+archive(1).zip
+
+# Checkpoints and Outputs
+checkpoints/
+outputs/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+ENV/
+
+# OS
+.DS_Store
+.thumbnails/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
